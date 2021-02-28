@@ -1,14 +1,21 @@
 from Cryptodome.Math.Numbers import Integer
+from Cryptodome.Hash.SHA256 import SHA256Hash
 from random import randint
 
 class BasePoint:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        
+
     def toElPoint(self, ec):
         assert ec.check(self), 'ElPoint is not on ElCurve'
         return ElPoint(self.x % ec.p, self.y % ec.p, ec)
+
+    def json(self):
+        return {
+            "x": self.x,
+            "y": self.y
+        }
 
 class ElCurve():
     def __init__(self, A, B, p):
@@ -33,8 +40,18 @@ class ElCurve():
         return (4*self.A**3 - 27*self.B**2) % self.p
 
     def __str__(self):
-        return 'A = ' + str(self.A) + '; B = ' + str(self.B)
-    pass
+        return '\n'.join([
+            'Elliptic Curve:',
+            '  A = ' + str(self.A),
+            '  B = ' + str(self.B)
+        ])
+
+    def json(self):
+        return {
+            "A": self.A,
+            "B": self.B,
+            "p": self.p
+        }
 
 class ElPoint(BasePoint):
     def __init__(self, x, y, curve):
@@ -92,6 +109,11 @@ class ElPoint(BasePoint):
             return '(+oo, +oo)'
         else:
             return repr((self.x, self.y))
+
+    def hash(self):
+        sha = SHA256Hash(self.x.to_bytes((self.x.bit_length() + 7) // 8, byteorder="big"))
+        sha.update(self.y.to_bytes((self.y.bit_length() + 7) // 8, byteorder="big"))
+        return sha.digest()
 
     def project(self):
         if (self == self.curve.O):
