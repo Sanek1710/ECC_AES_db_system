@@ -58,10 +58,11 @@ class ECC:
         aes = AES.new(ks, AES.MODE_ECB)
         c = aes.encrypt(pad(data, 32))
         kc = r*self.P
-        return (c, kc)
+        return (c, (kc.x, kc.y))
 
     def decrypt(self, cdata):
         c, kc = cdata
+        kc = ElPoint(kc[0], kc[1], self.EC)
         k = self.d * kc
         ks = k.hash()
         aes = AES.new(ks, AES.MODE_ECB)

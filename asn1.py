@@ -34,7 +34,7 @@ def load(object):
     elif isinstance(object, bytes):
         return BYTE_STRING(object)
     else:
-        raise TypeError("Unsupported object type")
+        raise TypeError("Unsupported object type: " + str(type(object)))
 
 class SEQUENCE(list):
     def __new__(cls, *args, **kw):
